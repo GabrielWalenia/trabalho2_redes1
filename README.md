@@ -1,2 +1,4 @@
 # trabalho2_redes1
 trabalho2_redes2
+Gabriel Antonio Walenia GRR20243090
+JoãoPedroLuizFilipe GRR

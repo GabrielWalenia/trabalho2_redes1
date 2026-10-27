@@ -1,68 +1,42 @@
-#include <netinet/in.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+// provides required data types
+#include <sys/types.h>
+// holds address family and socket functions
 #include <sys/socket.h>
+// has the sockaddr_in structure
+#include <netinet/in.h>
+// has functions for read and write operations
+#include <fcntl.h>
+// basic C header
+#include <stdio.h>
+// header to help with strings
+#include <string.h>
+// has macros such as EXIT_FAILURE
+#include<stdlib.h>
+// port through which connection is to be made
 #include <unistd.h>
-#define PORT 8080
-int main(int argc, char const* argv[])
+#define CONNECTION_PORT 3500
+
+/*
+struct sockaddr_in {
+   short int          sin_family;  // Address family
+   unsigned short int sin_port;    // Port number (in network byte order)
+   struct in_addr     sin_addr;    // Internet address (in network byte order)
+   unsigned char      sin_zero[8]; // just fill this with zeros
+}; 
+*/
+int main()
 {
-    int server_fd, new_socket;
-    ssize_t valread;
-    struct sockaddr_in address;
-    int opt = 1;
-    socklen_t addrlen = sizeof(address);
-    char buffer[1024] = { 0 };
-    char* hello = "Hello from server";
+    int server_soquete;
+    int client_soquete;
+    struct sockaddr_in endereco;
+    socklen_t socklen;
 
-    // Creating socket file descriptor
-    if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-        perror("socket failed");
-        exit(EXIT_FAILURE);
-    }
+    endereco.sin_family = 0;
+    endereco.sin_port = 0;
+    endereco.sin_addr = 0;
+    endereco.sin_zero = 0;
 
-    // Forcefully attaching socket to the port 8080
-    if (setsockopt(server_fd, SOL_SOCKET,
-                   SO_REUSEADDR | SO_REUSEPORT, &opt,
-                   sizeof(opt))) {
-        perror("setsockopt");
-        exit(EXIT_FAILURE);
-    }
-    address.sin_family = AF_INET;
-    address.sin_addr.s_addr = INADDR_ANY;
-    address.sin_port = htons(PORT);
-
-    // Forcefully attaching socket to the port 8080
-    if (bind(server_fd, (struct sockaddr*)&address,
-             sizeof(address))
-        < 0) {
-        perror("bind failed");
-        exit(EXIT_FAILURE);
-    }
-    if (listen(server_fd, 3) < 0) {
-        perror("listen");
-        exit(EXIT_FAILURE);
-    }
-    if ((new_socket
-         = accept(server_fd, (struct sockaddr*)&address,
-                  &addrlen))
-        < 0) {
-        perror("accept");
-        exit(EXIT_FAILURE);
-    }
-  
-    // subtract 1 for the null
-    // terminator at the end
-    valread = read(new_socket, buffer,
-                   1024 - 1); 
-    printf("%s\n", buffer);
-    send(new_socket, hello, strlen(hello), 0);
-    printf("Hello message sent\n");
-
-    // closing the connected socket
-    close(new_socket);
-  
-    // closing the listening socket
-    close(server_fd);
+    server_soquete = socket (PF_INET,  SOCK_DGRAM,  0) ; /* socket UDP*/
+    bind(server_soquete, )
     return 0;
 }
