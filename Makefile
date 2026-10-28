@@ -1,4 +1,4 @@
 server:
-	gcc listener.c -o server
+	gcc listener.c -o listener
 client:
-	gcc talker.c -o client
+	gcc talker.c -o talker
