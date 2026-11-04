@@ -35,31 +35,35 @@ int cria_socket_datagram(void) {
     local_addr.sin_addr.s_addr = INADDR_ANY;
 
     if (bind(sockfd, (struct sockaddr *)&local_addr, sizeof(local_addr)) == -1) {
+
         perror("bind");
         close(sockfd);
         return -1;
+
     }
 
     return sockfd;
 
 }
 
-int envia_mensagem(int sockfd, char *ip, char *msg) {
+int envia_mensagem(int sockfd, char *ip, char *msg,
+                   struct sockaddr_in destino) {
 
-    struct sockaddr_in destino;
     int numbytes;
 
     memset(&destino, 0, sizeof(destino));
 
     destino.sin_family = AF_INET;
-    destino.sin_port = htons(RCVR_PORT);
+    destino.sin_port = htons(4950);
 
     if (inet_pton(AF_INET, ip, &destino.sin_addr) != 1) {
         perror("inet_pton");
         return -1;
     }
 
-    numbytes = sendto(sockfd, msg, strlen(msg), 0, (struct sockaddr *)&destino, sizeof(destino));
+    numbytes = sendto(sockfd, msg, strlen(msg), 0,
+                      (struct sockaddr *)&destino,
+                      sizeof(destino));
 
     if (numbytes == -1) {
         perror("sendto");
@@ -67,17 +71,7 @@ int envia_mensagem(int sockfd, char *ip, char *msg) {
     }
 
     return numbytes;
-
 }
-
-int estabelece_conexao(){
-    return 0;
-}
-int fecha_socket_datagram(int sockfd){
-    close(sockfd);
-    return 0;
-}
-
 
 int recebe_mensagem(int sockfd, char *buf, int tamanho_buf, struct sockaddr_in *remetente) {
 
@@ -94,4 +88,9 @@ int recebe_mensagem(int sockfd, char *buf, int tamanho_buf, struct sockaddr_in *
 
     return numbytes;
 
+}
+
+int fecha_socket_datagram(int sockfd){
+    close(sockfd);
+    return 0;
 }

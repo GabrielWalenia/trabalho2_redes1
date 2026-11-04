@@ -1,9 +1,8 @@
-all: server client
+mach1: anel
+	gcc mach1.c anel.o -o mach1
 
-server: anel
-	gcc listener.c anel.o -o client
-client: anel
-	gcc talker.c anel.o -o server
+mach2: anel
+	gcc mach2.c anel.o -o mach2
 
 anel: anel.h
 	gcc anel.c -c anel.o
