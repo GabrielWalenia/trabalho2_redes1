@@ -16,91 +16,57 @@
 #define MAXBUFLEN 100
 /* ------ TALVEZ MUDAR -------------*/
 
-int cria_socket_datagram_talker(char *hostname, char* msg, unsigned long msg_length){
+int cria_socket_datagram(void) {
+
     int sockfd;
-    struct sockaddr_in rcvr_addr;
-    struct hostent *he;
-    int numbytes;
+    struct sockaddr_in local_addr;
 
-    // translates receiver name to address
-    he = gethostbyname(hostname) ;
-    if (he == NULL)
-    {
-        perror("gethostbyname");
-        return 0;
-    }
+    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
 
-    // fills the receiver struct info
-    rcvr_addr.sin_family = AF_INET;
-    rcvr_addr.sin_port   = htons(RCVR_PORT);
-    rcvr_addr.sin_addr   = *((struct in_addr *)he->h_addr);
-
-    // zeroes the rest of the struct
-    memset(&(rcvr_addr.sin_zero), '\0', 8);
-
-    // creates the UDP socket
-    sockfd = socket (AF_INET, SOCK_DGRAM, 0) ;
-    if (sockfd == -1)
-    {
+    if (sockfd == -1) {
         perror("socket");
-        return 0;
+        return -1;
     }
 
-    // sends the message to the receiver using the socket
-    numbytes = sendto (sockfd, msg, msg_length, 0,
-                       (struct sockaddr *) &rcvr_addr,
-                       sizeof(struct sockaddr)) ;
-    if (numbytes == -1)
-    {
-        perror("sendto");
-        return 0;
+    memset(&local_addr, 0, sizeof(local_addr));
+
+    local_addr.sin_family = AF_INET;
+    local_addr.sin_port = htons(RCVR_PORT);
+    local_addr.sin_addr.s_addr = INADDR_ANY;
+
+    if (bind(sockfd, (struct sockaddr *)&local_addr, sizeof(local_addr)) == -1) {
+        perror("bind");
+        close(sockfd);
+        return -1;
     }
 
-    
     return sockfd;
+
 }
 
-int cria_socket_datagram_listner(){
-    int sockfd;
-    struct sockaddr_in rcvr_addr;
-    struct sockaddr_in sndr_addr;
+int envia_mensagem(int sockfd, char *ip, char *msg) {
+
+    struct sockaddr_in destino;
     int numbytes;
-    socklen_t addr_len;
-    char buf[MAXBUFLEN];
 
-    // creates the UDP socket
-    if ((sockfd = socket (AF_INET, SOCK_DGRAM, 0)) == -1)
-    {
-        perror("socket");
-        return 0;
+    memset(&destino, 0, sizeof(destino));
+
+    destino.sin_family = AF_INET;
+    destino.sin_port = htons(RCVR_PORT);
+
+    if (inet_pton(AF_INET, ip, &destino.sin_addr) != 1) {
+        perror("inet_pton");
+        return -1;
     }
 
-    // fills struct with receiver's info
-    rcvr_addr.sin_family = AF_INET;
-    rcvr_addr.sin_port = htons(RCVR_PORT);   // short, network byte order
-    rcvr_addr.sin_addr.s_addr = INADDR_ANY;  // automatically fill with my IP
-    memset(&(rcvr_addr.sin_zero), '\0', 8);  // zero the rest of the struct
+    numbytes = sendto(sockfd, msg, strlen(msg), 0, (struct sockaddr *)&destino, sizeof(destino));
 
-    // associates the socket to receiver's data (addr & port)
-    if (bind (sockfd, (struct sockaddr *) &rcvr_addr,
-              sizeof (struct sockaddr)) == -1)
-    {
-        perror("bind");
-        return 0;
+    if (numbytes == -1) {
+        perror("sendto");
+        return -1;
     }
 
-    // waits for a packet arriving to the socket
-    addr_len = sizeof(struct sockaddr);
-
-    numbytes = recvfrom(sockfd, buf, MAXBUFLEN-1 , 0,
-                        (struct sockaddr *) &sndr_addr, &addr_len) ;
-    if (numbytes == -1)
-    {
-        perror ("recvfrom");
-        return 0;
-    }
-
-    return sockfd;
+    return numbytes;
 
 }
 
@@ -110,4 +76,22 @@ int estabelece_conexao(){
 int fecha_socket_datagram(int sockfd){
     close(sockfd);
     return 0;
+}
+
+
+int recebe_mensagem(int sockfd, char *buf, int tamanho_buf, struct sockaddr_in *remetente) {
+
+    socklen_t addr_len = sizeof(*remetente);
+
+    int numbytes = recvfrom(sockfd, buf, tamanho_buf - 1, 0, (struct sockaddr *)remetente, &addr_len);
+
+    if (numbytes == -1) {
+        perror("recvfrom");
+        return -1;
+    }
+
+    buf[numbytes] = '\0';
+
+    return numbytes;
+
 }
