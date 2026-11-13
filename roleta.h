@@ -7,16 +7,26 @@
 
 // Jogadores podem apostar em:
 // Número especifico: paga 36 para 1
-// Colunas: 3 para 1
 // Pretos e vermelhos: 1 para 1
 // Par ou impar: 1 para 1
+// Extras:
+// Colunas: 3 para 1
 // Altas ou baixas: 1 para 1
 
-// struct roleta{
-// };
-int **inicializar_tabuleiro();
-void fazer_aposta();
-void girar_roleta();
+struct quadrado{
+    int valor;
+    int cor;
+};
+
+struct aposta {
+    char tipo;
+    int opcao;
+    int fichas;
+};
+
+void inicializar_tabuleiro(struct quadrado **tabuleiro);
+int fazer_aposta();
+int girar_roleta();
 void distribuir_premios();
 void destruir_roleta();
 #endif
